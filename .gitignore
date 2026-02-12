@@ -8,6 +8,5 @@ __pycache__/
 .venv
 
 # data
-data
 demo
 upload_dir

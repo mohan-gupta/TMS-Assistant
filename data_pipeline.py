@@ -1,8 +1,15 @@
 from docling.document_converter import DocumentConverter
 
-from llama_index.core.node_parser import SentenceSplitter
+from llama_index.core.node_parser import TokenTextSplitter
 
 from llm_stack import generate_chunk_embeddings, insert_document
+
+def bytes_to_pdf(bytes_data):
+    file_path = "upload_dir/temp_file.pdf"
+    with open(file_path, "wb") as f:
+        f.write(bytes_data)
+        
+    return file_path
 
 def pdf_to_text(file_path: str):
     converter = DocumentConverter()
@@ -11,7 +18,7 @@ def pdf_to_text(file_path: str):
     return result.document.export_to_markdown()
 
 def text_to_chunks(text: str) -> list[str]:
-    text_parser = SentenceSplitter(chunk_size=384)
+    text_parser = TokenTextSplitter(chunk_size=384, chunk_overlap=32)
     text_chunks = text_parser.split_text(text)
     
     return text_chunks

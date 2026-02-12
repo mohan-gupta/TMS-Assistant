@@ -1,6 +1,6 @@
 import streamlit as st
 
-from data_pipeline import pdf_to_text, add_doc_to_db
+from data_pipeline import pdf_to_text, add_doc_to_db, bytes_to_pdf
 from agent import generate_response
 
 def process_user_file():    
@@ -8,13 +8,11 @@ def process_user_file():
     if uploaded_file is not None:
         bytes_data = uploaded_file.getvalue()
         
-        file_path = "upload_dir/temp_file.pdf"
-        with open(file_path, "wb") as f:
-            f.write(bytes_data)
+        file_path=bytes_to_pdf(bytes_data)
             
         with st.spinner("Loading", show_time=True):
             st.info("Analyzing your Data..")
-            text = pdf_to_text("upload_dir/temp_file.pdf")
+            text = pdf_to_text(file_path)
             
             st.info("Adding your data to VectorDB")
             add_doc_to_db(text)
@@ -55,4 +53,3 @@ if "file_uploaded" not in st.session_state:
     process_user_file()
 
 chat_with_user()
-    
