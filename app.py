@@ -8,7 +8,7 @@ def process_user_file():
     if uploaded_file is not None:
         bytes_data = uploaded_file.getvalue()
         
-        file_path=bytes_to_pdf(bytes_data)
+        file_path = bytes_to_pdf(bytes_data)
             
         with st.spinner("Loading", show_time=True):
             st.info("Analyzing your Data..")
@@ -40,6 +40,7 @@ def chat_with_user():
         st.session_state.messages.append({"role": "user", "content": prompt})
 
         response = generate_response(prompt)
+        
         # Display assistant response in chat message container
         with st.chat_message("assistant"):
             st.markdown(response)

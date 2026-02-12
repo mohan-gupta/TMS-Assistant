@@ -73,11 +73,9 @@ def vector_search(query: str, top_k:int = 3, threshold=0.6):
         query=query_embedding,
         limit=top_k
     )
-    context = [(point.payload["text"], point.score) for point in search_results.points]
+    context = [(point.payload["text"], point.score) for point in search_results.points if point.score>=threshold]
     
-    filtered_context = [item[0] for item in context if item[1]>=threshold]
-    
-    return filtered_context
+    return context
 
 if __name__ == "__main__":
     setup_vectordb()

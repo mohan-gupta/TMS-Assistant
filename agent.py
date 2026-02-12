@@ -5,8 +5,12 @@ import json
 
 from llm_stack import get_llm_response, vector_search
 
-def generate_response(query: str, threshold = 0.6):
+def generate_response(query: str, threshold = 0.65):
     context = vector_search(query, threshold=threshold)
+    
+    context_text = [item[0] for item in context]
+    context_score = [item[1] for item in context]
+    score = sum(context_score)/len(context_score)
     
     rag_prompt = f"""
     Answer the user query, using the provided context.
@@ -15,10 +19,12 @@ def generate_response(query: str, threshold = 0.6):
     
     query: {query}
     
-    context: {context}
+    context: {context_text}
     """
     
     response = get_llm_response(rag_prompt)
+    
+    response += f"\n\nConfidence score: {round(score, 3)*100}%"
     
     return response
 
