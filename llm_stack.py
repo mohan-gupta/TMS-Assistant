@@ -65,7 +65,7 @@ def insert_document(doc):
     
     return response
     
-def vector_search(query: str, top_k:int = 3, threshold=0.6):
+def vector_search(query: str, top_k:int = 3, threshold=0.7):
     query_embedding = embed_model.get_text_embedding(query)
     
     search_results = qdrant_client.query_points(
@@ -73,9 +73,18 @@ def vector_search(query: str, top_k:int = 3, threshold=0.6):
         query=query_embedding,
         limit=top_k
     )
-    context = [(point.payload["text"], point.score) for point in search_results.points if point.score>=threshold]
+    context = []
+    scores = []
     
-    return context
+    for point in search_results.points:
+        if point.score>=threshold:
+            context.append(point.payload["text"])
+            scores.append(point.score)
+    
+    if len(context) == 0:
+        return (None, None)
+    
+    return context, scores
 
 if __name__ == "__main__":
     setup_vectordb()

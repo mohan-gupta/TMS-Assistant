@@ -17,6 +17,12 @@ This project leverages LLMs and custom pipelines to assist users and developers 
 ✅ Filters context which doesn't cloesely aligns with the user query using a threshold of 0.6. <br>
 
 
+## ⬆️ Improvements that can be done
+
+🌱 Support for multiple files at the same time.<br>
+🌱 User session management, so that user data can be managed separately.<br>
+
+
 ---
 
 ## 📁 Repository Structure

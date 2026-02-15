@@ -1,10 +1,13 @@
+import json
+
 import streamlit as st
 
 from data_pipeline import pdf_to_text, add_doc_to_db, bytes_to_pdf
-from agent import generate_response
+from agent import generate_response, extract_strucutred_data
 
 def process_user_file():    
     uploaded_file = st.file_uploader(label="Upload you logistic document pdf.", type="pdf")
+    text = None
     if uploaded_file is not None:
         bytes_data = uploaded_file.getvalue()
         
@@ -13,6 +16,11 @@ def process_user_file():
         with st.spinner("Loading", show_time=True):
             st.info("Analyzing your Data..")
             text = pdf_to_text(file_path)
+            json_data = extract_strucutred_data(text)
+            
+            json_file_path = "upload_dir/temp_file.json"
+            with open(json_file_path, "w") as f:
+                json.dump(json_data, f, indent=2)
             
             st.info("Adding your data to VectorDB")
             add_doc_to_db(text)
@@ -20,7 +28,15 @@ def process_user_file():
         st.success("I am ready now, you may ask your queries.")
         
         st.session_state["file_uploaded"] = True
-    
+
+def get_strucutured_data():
+    json_data = None
+    if "file_uploaded" in st.session_state:
+        json_file_path = "upload_dir/temp_file.json"
+        with open(json_file_path) as f:
+            json_data = json.load(f)
+            
+    return json_data
 
 def chat_with_user():
     # Initialize chat history
@@ -33,14 +49,15 @@ def chat_with_user():
             st.markdown(message["content"])
 
     # React to user input
-    if prompt := st.chat_input("What is up?"):
+    if prompt := st.chat_input("Ask your Query!"):
         # Display user message in chat message container
         st.chat_message("user").markdown(prompt)
         # Add user message to chat history
         st.session_state.messages.append({"role": "user", "content": prompt})
 
         response = generate_response(prompt)
-        
+        response = f"""```json 
+        {json.dumps(response, indent=2)}"""
         # Display assistant response in chat message container
         with st.chat_message("assistant"):
             st.markdown(response)
@@ -52,5 +69,22 @@ st.html("<p>This Assistant, will help you with your logistic documents. You just
 
 if "file_uploaded" not in st.session_state:
     process_user_file()
+
+json_data = get_strucutured_data()
+
+if 'button_label' not in st.session_state:
+    st.session_state.button_label = "Show Data"
+
+def change_button_text():
+    if st.session_state.button_label == "Show Data":
+        st.markdown(f"```json {json.dumps(json_data, indent=2)}")
+        st.session_state.button_label = "Hide Data"
+    else:
+        st.session_state.button_label = "Show Data"
+        
+st.button(
+    label=st.session_state.button_label,
+    on_click=change_button_text
+)
 
 chat_with_user()

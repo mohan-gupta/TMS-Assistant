@@ -5,28 +5,37 @@ import json
 
 from llm_stack import get_llm_response, vector_search
 
-def generate_response(query: str, threshold = 0.65):
-    context = vector_search(query, threshold=threshold)
-    
-    context_text = [item[0] for item in context]
-    context_score = [item[1] for item in context]
-    score = sum(context_score)/len(context_score)
+def generate_response(query: str, threshold = 0.7):
+    context, scores = vector_search(query, threshold=threshold)
     
     rag_prompt = f"""
     Answer the user query, using the provided context.
-    If you are not provided with any context or the context is empty,
-    then simply respond to the user that you couldn't find any relevant inforamtion.
+    
+    ## Rules to follow:
+    - Respond to the user query only if you have the right context.
+    - If you are not provided with any context or the context is empty,
+    then simply respond to the user that "Relevant Inforamtion Not found in document".
+    - If user is greeting you then greet them.
     
     query: {query}
     
-    context: {context_text}
+    context: {context}
     """
     
     response = get_llm_response(rag_prompt)
     
-    response += f"\n\nConfidence score: {round(score, 3)*100}%"
+    if context is not None:
+        return {
+            "answer": response,
+            "context": context,
+            "retrieval score": round(sum(scores)/len(scores), 2)
+        }
     
-    return response
+    return {
+        "answer": response,
+        "context": None,
+        "retrieval score": None
+    }
 
 def extract_strucutred_data(unstructured_text: str):
     prompt = f"""

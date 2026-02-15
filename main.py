@@ -45,8 +45,8 @@ async def extract_data(file: UploadFile):
     
     text = pdf_to_text(file_path)
     
-    josn_data = extract_strucutred_data(text)
+    json_data = extract_strucutred_data(text)
     
     return {
-        "response": josn_data
+        "response": json_data
     }
